@@ -8,10 +8,8 @@ function App() {
 
   return (
     <>
-      <div id="spotify">
         <SpotifyPlayer link={activePlaylistUrl} />
         <input onChange={e => setActivePlaylistUrl(e.target.value)} value={activePlaylistUrl} placeholder='Spotify playlist url' />
-      </div>
     </>
   )
 }
