@@ -6,4 +6,4 @@ Allows playing it's own playlist for free (Need a spotify account and open spoti
 
 * restore packages: `yarn`
 * debug local version: `yarn dev`
-* Publish to Github pages: `yarn build && ./to_ghpages.sh`
+* Publish to Github pages: `yarn gh`
