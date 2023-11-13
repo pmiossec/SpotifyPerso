@@ -13,3 +13,15 @@ iframe {
 input {
   width: 100%;
 }
+
+#settings {
+  display: flex;
+
+  & a {
+    text-decoration: none;
+  }
+
+  & select {
+    min-width: 20%;
+  }
+}
