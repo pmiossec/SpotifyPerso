@@ -4,6 +4,9 @@ import './App.css'
 
 const CLIENT_ID = "49db0fd1075941c8a76359263a5f2be0"
 
+const tokenKey = "spotify_perso_token";
+const tokenDateKey = tokenKey +"_date";
+
 //Spotify authentication: https://dev.to/dom_the_dev/how-to-use-the-spotify-api-in-your-react-js-app-50pn
 const defaultPlaylist = "https://open.spotify.com/playlist/47dzOYBDRYt5ubbegyon3N"
 function App() {
@@ -14,15 +17,30 @@ function App() {
   const fetchPlaylists = async () => {
 
     const hash = window.location.hash
-    let extractedToken = window.localStorage.getItem("token")
+    let extractedToken = window.localStorage.getItem(tokenKey)
+    const storedTokenDate = new Date (window.localStorage.getItem(tokenDateKey) ?? new Date(1900, 1, 1).toString());
+
+    console.log("storedTokenDate", storedTokenDate);
+
+    if (storedTokenDate.getTime() < new Date().getTime() - 3_600_000) {
+      extractedToken = null;
+      window.localStorage.removeItem(tokenKey);
+      window.localStorage.removeItem(tokenDateKey);
+    }
 
     if (!extractedToken && hash) {
       extractedToken = (hash.substring(1).split("&").find(elem => elem.startsWith("access_token")) ?? "").split("=")[1]
       window.location.hash = "";
-      window.localStorage.setItem("token", extractedToken);
+      window.localStorage.setItem(tokenKey, extractedToken);
+      window.localStorage.setItem(tokenDateKey, new Date().toString());
     }
 
     setToken(extractedToken);
+
+    if (!extractedToken) {
+      console.log("No token to be able to do a Spotify api call... Please login.");
+      return;
+    }
 
     // https://developer.spotify.com/documentation/web-api/reference/get-list-users-playlists
     const response = await fetch(`https://api.spotify.com/v1/me/playlists`,{
