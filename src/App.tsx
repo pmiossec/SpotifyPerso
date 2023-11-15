@@ -6,6 +6,7 @@ const CLIENT_ID = "49db0fd1075941c8a76359263a5f2be0"
 
 const tokenKey = "spotify_perso_token";
 const tokenDateKey = tokenKey +"_date";
+const playlistsKey = "spotify_perso_playlists";
 
 interface PlaylistData {
   title: string,
@@ -50,9 +51,26 @@ function App() {
     return playLists;
   };
 
-  const fetchAllPlaylists = async () => {
+  const getAllPlaylists = async () => {
 
     const hash = window.location.hash
+
+    if (!hash) {
+      const seriliazedPlaylists = window.localStorage.getItem(playlistsKey);
+      if (!seriliazedPlaylists) {
+        return;
+      }
+
+      const cachedPlaylists = JSON.parse(seriliazedPlaylists) as PlaylistData[];
+      setPlaylistUrls(cachedPlaylists);
+      return;
+    }
+
+    fetchAllPlaylists();
+  };
+
+  const fetchAllPlaylists = async () => {
+
     let extractedToken = window.localStorage.getItem(tokenKey)
     const storedTokenDate = new Date (window.localStorage.getItem(tokenDateKey) ?? new Date(1900, 1, 1).toString());
 
@@ -64,13 +82,14 @@ function App() {
       window.localStorage.removeItem(tokenDateKey);
     }
 
+    const hash = window.location.hash
     if (!extractedToken && hash) {
       extractedToken = (hash.substring(1).split("&").find(elem => elem.startsWith("access_token")) ?? "").split("=")[1]
-      window.location.hash = "";
       window.localStorage.setItem(tokenKey, extractedToken);
       window.localStorage.setItem(tokenDateKey, new Date().toString());
     }
 
+    window.location.hash = "";
     setToken(extractedToken);
 
     if (!extractedToken) {
@@ -80,14 +99,19 @@ function App() {
 
     const playLists = await fetchPlaylists(`https://api.spotify.com/v1/me/playlists?limit=50`, extractedToken)
     const sortedPlaylists = playLists.sort((a, b)=> a.title.localeCompare(b.title));
-    console.log("playLists", sortedPlaylists);
-    setPlaylistUrls(sortedPlaylists);
+    console.log("playLists", sortedPlaylists.length, sortedPlaylists);
+    
+    if (sortedPlaylists && sortedPlaylists.length > 1) {
+      window.localStorage.setItem(playlistsKey, JSON.stringify(sortedPlaylists));
+      setPlaylistUrls(sortedPlaylists);
+    }
+
     if (playLists.length === 1) {
       setActivePlaylistUrl(playLists[0].url);
     }
   };
 
-  useEffect(() => { fetchAllPlaylists(); }, []);
+  useEffect(() => { getAllPlaylists(); }, []);
 
   const logout = () => {
     setToken("");
