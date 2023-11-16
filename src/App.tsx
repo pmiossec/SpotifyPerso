@@ -4,9 +4,11 @@ import './App.css'
 
 const CLIENT_ID = "49db0fd1075941c8a76359263a5f2be0"
 
-const tokenKey = "spotify_perso_token";
+const tokenKeyPrefix = "spotify_perso_";
+const tokenKey = tokenKeyPrefix + "token";
 const tokenDateKey = tokenKey +"_date";
-const playlistsKey = "spotify_perso_playlists";
+const playlistsKey = tokenKeyPrefix + "playlists";
+const currentPlaylistKey = tokenKeyPrefix + "current_playlist";
 
 interface PlaylistData {
   title: string,
@@ -63,6 +65,15 @@ function App() {
 
       const cachedPlaylists = JSON.parse(seriliazedPlaylists) as PlaylistData[];
       setPlaylistUrls(cachedPlaylists);
+
+      const currentPlaylist = window.localStorage.getItem(currentPlaylistKey);
+      if (!currentPlaylist) {
+        return;
+      }
+
+      const currentPlaylistData = JSON.parse(currentPlaylist) as string[];
+      selectCurrentPlaylist(currentPlaylistData[0], currentPlaylistData[1]);
+
       return;
     }
 
@@ -118,6 +129,12 @@ function App() {
     window.localStorage.removeItem("token");
   }
 
+  const selectCurrentPlaylist = (currentPlaylistUrl: string, label: string) => {
+    window.localStorage.setItem(currentPlaylistKey, JSON.stringify([currentPlaylistUrl, label]));
+    setActivePlaylistUrl(currentPlaylistUrl);
+    document.title = label;
+  }
+
   const redirectUri = `${window.location.origin}${window.location.pathname}`;
 
   return (
@@ -126,7 +143,7 @@ function App() {
         <div id="settings">
           { playlistUrls.length != 1 && <select name="playlists" id="playlists"
             value={activePlaylistUrl}
-            onChange={e => setActivePlaylistUrl(e.target.value)}>
+            onChange={e => selectCurrentPlaylist(e.target.value, e.target.selectedOptions[0].label)}>
             {playlistUrls.map(p => <option value={p.url} key={p.url} >{p.title}</option>)}
           </select>}
           <a href={activePlaylistUrl} target='_blank'>🎶</a>
