@@ -129,6 +129,7 @@ function App() {
             onChange={e => setActivePlaylistUrl(e.target.value)}>
             {playlistUrls.map(p => <option value={p.url} key={p.url} >{p.title}</option>)}
           </select>}
+          <a href={activePlaylistUrl} target='_blank'>🎶</a>
           <input onChange={e => setActivePlaylistUrl(e.target.value)} value={activePlaylistUrl} placeholder='Spotify playlist url' />
           {!token && <a href={`https://accounts.spotify.com/authorize?client_id=${CLIENT_ID}&redirect_uri=${redirectUri}&response_type=token&scope=playlist-read-private`}>🔐</a>}
           {token && <a onClick={() =>logout()} href="#">🔓</a>}
